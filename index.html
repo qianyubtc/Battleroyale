@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BSC 大逃杀</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico"/>
+<link rel="icon" type="image/jpeg" sizes="32x32" href="favicon-32.jpg"/>
+<link rel="apple-touch-icon" href="favicon-192.png"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- 顶栏 -->
+<div class="page">
+  <div class="topbar">
+    <div>
+      <div class="logo-main">BSC<span>/</span>大逃杀</div>
+      <div class="logo-sub">去中心化竞技协议</div>
+    </div>
+    <div class="net-badge"><div class="net-dot" id="netDot"></div><span id="netLabel">⬡ BSC 主网</span></div>
+    <div class="spacer"></div>
+    <div class="bal-chip" id="balChip">-- BNB</div>
+    <button class="icon-btn" onclick="toggleTheme()" title="切换主题" id="themeBtn">🌙</button>
+    <button class="con-btn" id="conBtn" onclick="connectWallet()">连接钱包</button>
+  </div>
+
+  <!-- ══ 首页视图 ══ -->
+  <div class="view active" id="viewHome">
+
+    <!-- 规则说明 -->
+    <div class="home-rules">
+      <div class="home-rules-header" onclick="toggleHomeRules()">
+        <span class="home-rules-icon">📋</span>
+        <span class="home-rules-label">// 玩法规则</span>
+        <span class="home-rules-arrow" id="homeRulesArrow">▼</span>
+      </div>
+      <div class="home-rules-body" id="homeRulesBody">
+        <div class="home-rules-inner">
+          <div class="hri-cols">
+            <div class="hri-mode storm">
+              <div class="hri-mode-title">🔥 腥风血雨 · 杀3活1</div>
+              <div class="hri-mode-desc">4个房间随机存活<b>1个</b>，其余3个全部淘汰。存活房间的玩家按各自投入占比，瓜分扣除手续费后的全部奖池。高风险高回报，一局定胜负。</div>
+            </div>
+            <div class="hri-mode gentle">
+              <div class="hri-mode-title">🌸 温柔版 · 杀1活3</div>
+              <div class="hri-mode-desc">4个房间随机淘汰<b>1个</b>，其余3个房间全部存活。存活的所有玩家按全局投入占比分奖池，输面小胜率高，适合稳健型玩家。</div>
+            </div>
+          </div>
+          <div class="hri-steps">
+            <div class="hri-step"><div class="hri-step-num">STEP 01</div><div class="hri-step-title">选择场次</div><div class="hri-step-desc">选择模式（腥风/温柔）和级别（初/中/高），级别区别仅为最低投入门槛。</div></div>
+            <div class="hri-step"><div class="hri-step-num">STEP 02</div><div class="hri-step-title">选房间投入</div><div class="hri-step-desc">A/B/C/D 四个房间任选其一，每局限投一次，每人一个房间，最多10人。</div></div>
+            <div class="hri-step"><div class="hri-step-num">STEP 03</div><div class="hri-step-title">满员即结算</div><div class="hri-step-desc">第10位玩家投入后，链上同笔交易原子结算，无需等待，奖金即时到账。</div></div>
+            <div class="hri-step"><div class="hri-step-num">STEP 04</div><div class="hri-step-title">邀请返佣</div><div class="hri-step-desc">邀请好友可获其手续费的20%佣金；绑定邀请人后，你自己每次投入享受10%手续费返佣。</div></div>
+            <div class="hri-step"><div class="hri-step-num">STEP 05</div><div class="hri-step-title">链上公平</div><div class="hri-step-desc">随机结果由链上多源熵生成（blockhash+时间戳+玩家地址异或），任何人均可在BscScan验证。</div></div>
+            <div class="hri-step"><div class="hri-step-num">STEP 06</div><div class="hri-step-title">自动开新局</div><div class="hri-step-desc">结算后无需任何操作，下一位投入的玩家自动触发新一局，永续运行。</div></div>
+          </div>
+          <div class="hri-note">⚠ 示例（腥风·手续费10%）：10人各投0.1 BNB，总奖池1 BNB，手续费0.1 BNB，发放0.9 BNB。A房间存活，共投0.4 BNB，其中投0.3 BNB的玩家可得 0.9 × 0.3/0.4 = <b>0.675 BNB</b>，净赚 <b>+0.575 BNB</b>。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 我的参与中 -->
+    <div class="my-active-section" id="myActiveSection" style="display:none;">
+      <div class="my-active-title">我的参与中</div>
+      <div class="my-active-cards" id="myActiveCards"></div>
+    </div>
+
+    <!-- 全局统计 -->
+    <div class="global-stats" id="globalStats">
+      <div class="gs-card"><div class="gs-label">总完成局数</div><div class="gs-val" id="gsTotalGames">--</div></div>
+      <div class="gs-card"><div class="gs-label">总流水</div><div class="gs-val yellow" id="gsTotalVolume">-- BNB</div></div>
+      <div class="gs-card"><div class="gs-label">当前参与人数</div><div class="gs-val" id="gsActivePlayers">--</div></div>
+      <div class="gs-card"><div class="gs-label">我的待提佣金</div><div class="gs-val green" id="gsMyPending">-- BNB</div></div>
+    </div>
+
+    <!-- 模式Tab + 场次网格 -->
+    <div class="home-section">
+      <div class="mode-tabs">
+        <button class="mode-tab storm active" id="tabStorm" onclick="switchMode('storm')">🔥 腥风血雨</button>
+        <button class="mode-tab gentle" id="tabGentle" onclick="switchMode('gentle')">🌸 温柔版</button>
+      </div>
+      <div class="mode-desc-bar storm" id="modeDescBar"><span>杀3活1</span> · 随机选1个房间存活，独吞全部奖池</div>
+      <div class="pools-grid-3" id="activePoolsGrid"></div>
+    </div>
+
+    <!-- 邀请面板（首页） -->
+    <div class="ref-panel" id="refPanelHome">
+      <div class="ref-panel-header" onclick="toggleRef('refBodyHome','refArrowHome')">
+        <span>🔗</span>
+        <span class="ref-title">邀请返佣</span>
+        <span class="ref-rate" id="refRateBadgeHome">邀请返 20% · 被邀请返 10%</span>
+        <span class="ref-arrow" id="refArrowHome">▼</span>
+      </div>
+      <div class="ref-body" id="refBodyHome">
+        <div class="ref-link-row">
+          <div class="ref-link-input" id="refLinkHome">连接钱包后生成邀请链接</div>
+          <button class="ref-copy-btn" onclick="copyRefLink()">复制</button>
+        </div>
+        <div class="ref-note" id="refNoteDescHome">通过链接加入的用户将绑定为你的下级，其每次投入产生的手续费中 <b>20%</b> 归你。同时绑定邀请人后，你自己每次投入可享受手续费 <b>10% 返佣</b>。</div>
+        <div class="ref-stats-grid">
+          <div class="ref-stat"><div class="ref-stat-label">待提取（跨场汇总）</div><div class="ref-stat-val green" id="refTotalPending">--</div></div>
+          <div class="ref-stat"><div class="ref-stat-label">历史累计</div><div class="ref-stat-val" id="refTotalEarned">--</div></div>
+          <div class="ref-stat"><div class="ref-stat-label">我的下级</div><div class="ref-stat-val" id="refCountHome">--</div></div>
+          <div class="ref-stat"><div class="ref-stat-label">我的邀请人</div><div class="ref-stat-val" id="refMyRefHome" style="font-size:.7rem;">--</div></div>
+          <div class="ref-stat"><div class="ref-stat-label">返佣待提取</div><div class="ref-stat-val green" id="refTotalRebate">--</div></div>
+        </div>
+        <div class="ref-earnings-title">各场次佣金明细</div>
+        <div id="refContractList"></div>
+        <button class="ref-withdraw-btn" id="refWithdrawAllBtn" onclick="doWithdrawAll('referral')" disabled>暂无可提取佣金</button>
+        <button class="ref-rebate-btn" id="refRebateAllBtn" onclick="doWithdrawAll('rebate')" disabled>暂无可提取返佣</button>
+        <div class="ref-note" id="refNoteHome" style="margin-top:6px;">请先连接钱包</div>
+      </div>
+    </div>
+
+    <!-- 全局历史 -->
+    <div class="section-divider"></div>
+    <div class="home-section-title hist">全局历史战局</div>
+    <div class="hist-filter-wrap">
+      <div class="hf-row">
+        <span class="hf-label">模式</span>
+        <button class="hf-btn active-storm" id="hfStorm" onclick="setHistMode('storm',this)">腥风血雨</button>
+        <button class="hf-btn" id="hfGentle" onclick="setHistMode('gentle',this)">温柔版</button>
+        <button class="hf-btn" id="hfAll" onclick="setHistMode('all',this)">全部</button>
+      </div>
+      <div class="hf-row">
+        <span class="hf-label">级别</span>
+        <button class="hf-btn" id="hfInit" onclick="setHistTier('init',this)">初级</button>
+        <button class="hf-btn" id="hfMid" onclick="setHistTier('mid',this)">中级</button>
+        <button class="hf-btn" id="hfHigh" onclick="setHistTier('high',this)">高级</button>
+        <button class="hf-btn active-tier" id="hfAllTier" onclick="setHistTier('all',this)">全部</button>
+      </div>
+    </div>
+    <div class="hist-wrap">
+      <div class="hist-header">
+        <div class="hist-title">历史战局</div>
+        <div class="hist-count" id="globalHistCount">共 0 局</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="hist-table">
+          <thead><tr>
+            <th>场次</th><th>局号</th><th>存活房间</th><th>房间分布</th>
+            <th>总奖池</th><th>手续费</th><th>实际发放</th><th>时间</th><th></th>
+          </tr></thead>
+          <tbody id="globalHistBody"><tr><td colspan="9"><div class="empty-state">// 加载中…</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 全局算法日志 -->
+    <div class="section-divider"></div>
+    <div class="home-section-title algo">全局链上随机算法日志</div>
+    <div class="global-algo-panel">
+      <div class="algo-header">
+        <div class="algo-live-dot"></div>
+        <div class="algo-title">⬡ 链上随机算法日志（全场次）</div>
+        <div class="algo-sub">实时</div>
+      </div>
+      <div class="algo-body" id="globalAlgoBody">
+        <div class="algo-empty">// 等待各场次结算事件...</div>
+        <pre style="font-family:var(--mono);font-size:.58rem;color:var(--mute);line-height:1.8;padding:8px 4px;">seed = keccak256(blockhash(n-1), timestamp, blockNum, gameId, totalPot, roomTotals, addrEntropy) % activeRooms</pre>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="foot-info">
+        <span>GameFi · BNB Smart Chain</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 场次详情视图 ══ -->
+  <div class="view" id="viewPool">
+    <div class="pool-detail-header">
+      <button class="back-btn" onclick="goHome()">← 返回首页</button>
+      <div class="detail-mode-badge" id="detailModeBadge">腥风血雨</div>
+      <div class="detail-tier-badge" id="detailTierBadge">初级场</div>
+      <div class="detail-desc" id="detailDesc">最低 0.001 BNB · 杀3活1</div>
+    </div>
+
+    <!-- 规则 -->
+    <div class="rules-panel" id="rulesPanel">
+      <div class="rules-header" onclick="toggleRules()">
+        <span class="rules-icon">📋</span>
+        <span class="rules-label">// 游戏规则</span>
+        <span class="rules-arrow" id="rulesArrow">▼</span>
+      </div>
+      <div class="rules-body" id="rulesBody">
+        <div class="rules-inner">
+          <div class="rule-item"><div class="rule-num">规则 01</div><div class="rule-title">选择房间</div><div class="rule-desc">共有 A/B/C/D 四个房间，每局最多 10 人参与，每人只能投入一个房间。</div></div>
+          <div class="rule-item"><div class="rule-num">规则 02</div><div class="rule-title">投入 BNB</div><div class="rule-desc" id="ruleMinDeposit">最低投入 0.001 BNB，投入金额不可撤回。</div></div>
+          <div class="rule-item"><div class="rule-num">规则 03</div><div class="rule-title">满员即结算</div><div class="rule-desc">第 10 位玩家投入后，链上立即原子结算，无需等待。</div></div>
+          <div class="rule-item"><div class="rule-num">规则 04</div><div class="rule-title">随机淘汰</div><div class="rule-desc" id="ruleMode">结算时随机选出 1 个存活房间，其余全部淘汰。</div></div>
+          <div class="rule-item"><div class="rule-num">规则 05</div><div class="rule-title">按比例分奖</div><div class="rule-desc" id="ruleDistDesc">四房间全部投入之和为奖池，扣除 <b>10%</b> 手续费后，剩余 <b>90%</b> 按存活房间内各玩家投入占比分配。</div></div>
+          <div class="rule-item"><div class="rule-num">规则 06</div><div class="rule-title">自动开新局</div><div class="rule-desc">结算后下一位投入自动触发新局。</div></div>
+        </div>
+        <div class="rules-note"><span id="ruleExample">⚠ 示例：10人总投入 1 BNB，手续费 0.1 BNB，奖池 0.9 BNB。若 A 房间存活（共投 0.4 BNB），其中投入 0.3 BNB 的玩家可分得 0.675 BNB。</span></div>
+      </div>
+    </div>
+
+    <!-- 当前局状态 -->
+    <div class="cmd-bar">
+      <div class="cmd-item"><div class="cmd-label">当前局</div><div class="cmd-val" id="cGid">#--</div></div>
+      <div class="cmd-item"><div class="cmd-label">状态</div><div class="cmd-val" id="cStatus"><span class="live-ind"><span class="live-pip wait"></span>待机</span></div></div>
+      <div class="cmd-item"><div class="cmd-label">参与人数</div><div class="cmd-val" id="cPlayers">0 / 10</div></div>
+      <div class="cmd-item"><div class="cmd-label">总奖池</div><div class="cmd-val" id="cPool" style="color:var(--volt);">0.0000 BNB</div></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-header">
+        <span>进场进度</span><span id="cProgTxt">0 / 10</span>
+      </div>
+      <div class="prog-bar"><div class="prog-bar-fill" id="progBar" style="width:0%"></div></div>
+      <div class="pip-row" id="pipRow"></div>
+    </div>
+
+    <!-- 已投入横幅 -->
+    <div class="my-banner" id="myBanner">
+      <div class="my-banner-dot"></div>
+      <div class="my-banner-text">本局已投入 <b id="myAmtLabel">--</b>，等待满员结算</div>
+      <div class="room-badge" id="myRoomBadge">房间 A</div>
+    </div>
+    <div class="my-est" id="myEst">
+      <div><div class="my-est-label">当前总奖池</div><div class="my-est-val" id="myEstPot">-- BNB</div></div>
+      <div><div class="my-est-label" id="estDistLabel">90% 发放</div><div class="my-est-val" id="myEstDist">-- BNB</div></div>
+      <div><div class="my-est-label">我的占比</div><div class="my-est-val" id="myEstPct">--%</div></div>
+      <div><div class="my-est-label">若存活预估回报</div><div class="my-est-val green" id="myEstRet">-- BNB</div></div>
+    </div>
+
+    <!-- 房间选择 -->
+    <div class="rooms-section-title">
+      <span>// 选择房间</span>
+      <span class="sel-room-tag srt-none" id="selRoomTag">未选择房间</span>
+      <span style="font-family:var(--mono);font-size:.55rem;color:var(--mute);">点击选择 · 投入后锁定</span>
+    </div>
+    <div class="rooms-grid" id="roomsGrid"></div>
+
+    <!-- 投入面板 -->
+    <div class="dep-panel">
+      <div class="dep-title">投入 BNB</div>
+      <div class="dep-calc" id="depCalc">
+        <div class="dc-item"><div class="dc-label">投入金额</div><div class="dc-val" id="cFee2">--</div></div>
+        <div class="dc-item"><div class="dc-label">手续费</div><div class="dc-val" id="cFee">--</div></div>
+        <div class="dc-item"><div class="dc-label">净值</div><div class="dc-val" id="cNet">--</div></div>
+        <div class="dc-item"><div class="dc-label">预估回报</div><div class="dc-val green" id="cRet">--</div></div>
+      </div>
+      <div class="inp-row">
+        <input class="amt-input" id="amtInput" type="number" placeholder="输入 BNB 金额" step="0.001" min="0"/>
+        <button class="dep-btn" id="depBtn" onclick="doDeposit()" disabled><span>投入</span></button>
+      </div>
+      <div class="preset-row" id="presetRow"></div>
+      <div class="dep-note" id="depNote">请先 <span class="hl">连接钱包</span> 并选择房间，输入金额后投入。</div>
+    </div>
+
+    <!-- 本场历史 -->
+    <div class="hist-wrap">
+      <div class="hist-header">
+        <div class="hist-title">本场历史战局</div>
+        <div class="hist-count" id="histCount">共 0 局</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="hist-table">
+          <thead><tr>
+            <th>局号</th><th>存活房间</th><th>房间分布</th>
+            <th>总奖池</th><th>手续费</th><th>实际发放</th><th>时间</th><th></th>
+          </tr></thead>
+          <tbody id="histBody"><tr><td colspan="8"><div class="empty-state">// 暂无历史记录</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 算法日志 -->
+    <div class="algo-panel">
+      <div class="algo-header">
+        <div class="algo-live-dot"></div>
+        <div class="algo-title">⬡ 链上随机算法日志</div>
+        <div class="algo-sub">实时</div>
+      </div>
+      <div class="algo-body" id="algoBody">
+        <div class="algo-empty">// 等待结算事件...</div>
+        <div class="algo-empty" style="margin-top:6px;">// 随机种子构成</div>
+        <pre style="font-family:var(--mono);font-size:.58rem;color:var(--mute);line-height:1.8;padding:8px 4px;">seed = keccak256(
+  blockhash(n-1)   // 前一区块哈希
+  block.timestamp  // 出块时间戳
+  block.number     // 当前区块高度
+  gameId           // 局号（唯一）
+  totalPot         // 总奖池金额
+  roomTotals[0..3] // 各房间实际投入
+  addrEntropy      // 全部玩家地址XOR
+) % activeRooms   // 仅从有人房间中选</pre>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="foot-info">
+        <span>GameFi · BNB Smart Chain</span>
+        <span id="footerAddr" style="color:var(--mute2);">待部署</span>
+        <a class="foot-link" id="bscScanLink" href="#" target="_blank">⬡ BscScan ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 钱包选择弹窗 -->
+<div class="modal-bg" id="wpickBg">
+  <div class="wpick-box">
+    <button class="modal-close" onclick="closeWPick()">✕</button>
+    <div class="wpick-title">选择钱包</div>
+    <div class="wpick-list" id="wpickList"></div>
+  </div>
+</div>
+
+<!-- 邀请绑定弹窗 -->
+<div class="modal-bg" id="bindRefBg">
+  <div class="wpick-box" style="max-width:400px;text-align:center;">
+    <div style="font-size:2.2rem;margin-bottom:10px;">🔗</div>
+    <div style="font-family:var(--disp);font-size:1.1rem;font-weight:600;letter-spacing:3px;color:var(--snow);margin-bottom:6px;">检测到邀请链接</div>
+    <div style="font-family:var(--mono);font-size:.78rem;color:var(--mute);margin-bottom:16px;">邀请人：<span id="bindRefAddrTxt" style="color:var(--ice);"></span></div>
+    <div style="background:var(--ink);border:1px solid var(--wire);border-radius:var(--r);padding:14px 16px;margin-bottom:18px;text-align:left;">
+      <div style="font-family:var(--mono);font-size:.6rem;color:var(--mute);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">绑定后你将获得</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:1.1rem;flex-shrink:0;">💰</span>
+          <div>
+            <div id="bindBenefitRebateTxt" style="font-family:var(--mono);font-size:.82rem;color:var(--acid);margin-bottom:2px;">每次投入手续费 <b>10% 返佣</b>给自己</div>
+            <div style="font-family:var(--mono);font-size:.62rem;color:var(--mute);">结算后自动累积，随时提取到钱包</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:1.1rem;flex-shrink:0;">🤝</span>
+          <div>
+            <div style="font-family:var(--mono);font-size:.82rem;color:var(--fog);margin-bottom:2px;">邀请人获得你手续费的 <span id="bindBenefitRefTxt" style="color:var(--volt);font-weight:600;">20%</span></div>
+            <div style="font-family:var(--mono);font-size:.62rem;color:var(--mute);">从平台手续费中出，不影响你的奖金</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeBindRef(false)" style="flex:1;height:44px;border-radius:var(--r);border:1px solid var(--wire2);background:transparent;color:var(--mute);font-family:var(--disp);font-size:.88rem;cursor:pointer;letter-spacing:1px;">稍后再说</button>
+      <button onclick="closeBindRef(true)" style="flex:2;height:44px;border-radius:var(--r);border:none;background:var(--acid);color:var(--ink);font-family:var(--disp);font-size:.92rem;font-weight:600;cursor:pointer;letter-spacing:2px;">确认绑定</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:.6rem;color:var(--mute);margin-top:10px;">绑定关系上链后不可修改</div>
+  </div>
+</div>
+
+<!-- 结算弹窗 -->
+<div class="result-bg" id="resultBg">
+  <div class="result-box">
+    <button class="modal-close" onclick="closeResult()">✕</button>
+    <span class="result-emoji" id="rEmoji">💥</span>
+    <div class="result-title" id="rTitle">结算</div>
+    <div class="result-sub" id="rSub"></div>
+    <div id="rStats"></div>
+    <div class="rno-pay" id="rNoPay" style="display:none;"></div>
+    <button class="btn-confirm" onclick="closeResult()"><span>确认</span></button>
+  </div>
+</div>
+
+<div id="ethers-err" style="display:none;position:fixed;top:0;left:0;right:0;padding:14px;background:#ff3355;color:#fff;font-family:monospace;font-size:13px;text-align:center;z-index:9999;">
+  ⚠ ethers.js 加载失败，请检查网络连接后刷新页面
+</div>
+<script>
+(function(){
+  var cdns=[
+    'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js',
+    'https://npm.elemecdn.com/ethers@5.7.2/dist/ethers.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js'
+  ];
+  var idx=0;
+  function load(){
+    if(idx>=cdns.length){document.getElementById('ethers-err').style.display='block';return;}
+    var s=document.createElement('script');s.src=cdns[idx++];
+    s.onload=function(){if(typeof ethers!=='undefined')initApp();else load();};
+    s.onerror=function(){load();};
+    document.head.appendChild(s);
+  }
+  load();
+})();
+</script>
+<script src="app.js"></script>
+</body>
+</html>
